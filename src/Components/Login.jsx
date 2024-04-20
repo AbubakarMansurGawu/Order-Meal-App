@@ -1,118 +1,117 @@
-import React, {useRef, useState, useEffect} from 'react'
-import { FaInfoCircle, FaCheck, FaTimes } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-
-
+import React, { useRef, useState, useEffect } from 'react';
+import { FaInfoCircle } from 'react-icons/fa';
+import { BiCheckCircle, BiSolidXCircle } from 'react-icons/bi';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z][a-zA-Z0-9-_]{3,20}$/;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,20}$/
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,20}$/;
 
-const Register = () => {
-    const userRef = useRef()
-    const errRef = useRef()
+const Login = () => {
+    const userRef = useRef();
+    const errRef = useRef();
+    const navigate = useNavigate();
 
-
-    const [user, setUser] = useState('')
-    const [validName, setValidName] = useState(false)
-    const [userFocus, setUserFocus] = useState(false)
-
-    const [pwd, setPwd] = useState('')
-    const [validPwd, setValidPwd] = useState(false)
-    const [pwdFocus, setPwdFocus] = useState(false)
-
-    const [matchpwd, setMatchPwd] = useState('')
-    const [validMatch, setValidMatch] = useState(false)
-    const [matchFocus, setMatchFocus] = useState(false)
-
-    const [errMsg, setErrMsg] = useState('')
-    const [success, setSuccess] = useState(false)
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [validName, setValidName] = useState(false);
+    const [validPwd, setValidPwd] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        userRef.current.focus()
-    }, [])
+        userRef.current.focus();
+    }, []);
 
     useEffect(() => {
-        const result = USER_REGEX.test(user)
-        setValidName(result)
-    }, [user])
+        setValidName(USER_REGEX.test(username));
+    }, [username]);
 
     useEffect(() => {
-        const result = PWD_REGEX.test(pwd)
-        console.log(result)
-        console.log(pwd)
-        setValidPwd(result)
-        const match = pwd === matchpwd
-        setValidMatch(match)
-    }, [pwd, matchpwd])
+        setValidPwd(PWD_REGEX.test(password));
+    }, [password]);
 
-    useEffect(() => {
-        setErrMsg('')
-    }, [user, pwd, matchpwd])
+    const handleLogin = () => {
+        if (username === 'AbubakarMansur' && password === '@!Amg12345') {
+            setSuccess(true);
+            navigate("/");
+            toast.success('Login Successful');
+        } else {
+            toast.error('Invalid username or password');
+        }
+    };
 
-  return (
-    <>
-    <p className='flex items-center justify-center mt-32 font-extrabold text-3xl '>Welcome to my ABINCHI Store</p>
+    const isLoginDisabled = !validName || !validPwd;
 
-        <section className='mx-auto mt-20 w-[400px] bg-opacity-20 bg-orange-400 shadow-md shadow-orange-800 rounded-lg'>
-            <p className='text-2xl p-5 font-bold'>Login</p>
-            <form className='p-5'>
-                <label htmlFor='username'>
-                    Username:
-                    {/* <span className={validName ? 'valid' : 'hide'}>
-                        <FaCheck icon={FaCheck}/>
-                    </span>
-                    <span className={validName || !user ? 'hide' : 'invalid'}>
-                        <FaTimes  />
-                    </span> */}
-                </label>
-                <input
-                type='text'
-                id='username'
-                className='w-full rounded-lg h-10' 
-                ref={userRef}
-                aria-invalid={validName ? 'false' : 'true'}
-                onChange={(e) => setUser(e.target.value)} required
-                onFocus={() => setUserFocus(true)}
-                onBlur={() => setUserFocus(false)}
-                />
-                {/* <p className={userFocus && user && !validName ? 'instructions' : 'offscreen'}>
-                <FaInfoCircle /> 
-                3 to 20 characters.<br />
-                Must begin with a letter<br/>
-                letters, numbers, underscores, hyphens allowed.
-                </p> */}
+    return (
+        <>
+            <p className='flex items-center justify-center mt-32 font-extrabold text-3xl '>Welcome to my ABINCHI Store</p>
 
-                <label htmlFor='password'>
-                    Password:
-                    {/* <span className={validName ? 'valid' : 'hide'}>
-                        <FaCheck />
-                    </span>
-                    <span className={validName || !user ? 'hide' : 'invalid'}>
-                        <FaTimes />
-                    </span> */}
-                </label>
-                <input
-                type='password'
-                id='password'
-                className='w-full rounded-lg h-10' 
-                ref={userRef}
-                aria-invalid={validName ? 'false' : 'true'}
-                onChange={(e) => setPwd(e.target.value)} required
-                onFocus={() => setPwdFocus(true)}
-                onBlur={() => setPwdFocus(false)}
-                />
+            <section className='mx-auto mt-20 w-[400px] bg-opacity-20 bg-orange-400 shadow-md shadow-orange-800 rounded-lg'>
+                <p ref={errRef} className='offscreen' aria-live='assertive'></p>
+                <p className='text-2xl p-5 font-bold'>Login</p>
+                <div className='p-5'>
+                    <label htmlFor='username'>
+                        Username:
+                        <span className={validName ? 'valid' : 'hide'}>
+                            <BiCheckCircle />
+                        </span>
+                        <span className={(validName || !username) && !success ? 'hide' : 'invalid'}>
+                            <BiSolidXCircle />
+                        </span>
+                    </label>
+                    <input
+                        type='text'
+                        id='username'
+                        className='w-full rounded-lg h-10 pl-2'
+                        ref={userRef}
+                        aria-invalid={validName ? 'false' : 'true'}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                    <p className={username && !validName ? 'instructions' : 'offscreen'}>
+                        <FaInfoCircle />
+                        3 to 20 characters.<br />
+                        Must begin with a letter<br />
+                        letters, numbers, underscores, hyphens allowed.
+                    </p>
 
-                <button className='w-full cursor-default bg-orange-500 rounded-lg mt-10 p-3 font-bold text-white'>
-                    <Link to='/Home'>
+                    <label htmlFor='password'>
+                        Password:
+                        <span className={validPwd ? 'valid' : 'hide'}>
+                            <BiCheckCircle />
+                        </span>
+                        <span className={(validPwd || !password) && !success ? 'hide' : 'invalid'}>
+                            <BiSolidXCircle />
+                        </span>
+                    </label>
+                    <input
+                        type='password'
+                        id='password'
+                        className='w-full rounded-lg h-10 pl-2'
+                        ref={userRef}
+                        aria-invalid={validPwd ? 'false' : 'true'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+
+                    <button
+                        type='button'
+                        onClick={handleLogin}
+                        className={`w-full cursor-pointer bg-orange-500 rounded-lg mt-10 p-3 font-bold text-white ${isLoginDisabled ? 'disabled' : ''}`}
+                        disabled={isLoginDisabled}
+                    >
                         Login
-                    </Link>
-                </button>            </form>
-            <p className='p-5'>Dont have an account 
-            <Link to='/Register' className='pl-2 text-blue-500 font-bold' >Sign Up</Link>
-            </p>
-        </section>
-    </>
-  )
-}
+                    </button>
 
-export default Register
+                </div>
+                <p className='p-5'>Don't have an account
+                    <Link to='/Register' className='pl-2 text-blue-500 font-bold'>Sign Up</Link>
+                </p>
+            </section>
+        </>
+    );
+};
+
+export default Login;

@@ -1,12 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { mealOptions } from '../data';
+import React, { useState, useEffect, useContext } from 'react'; 
 import { BiPlus, BiMinus } from 'react-icons/bi';
+import { StoreContext } from '../context/StoreContext';
+import toast from 'react-hot-toast';
 
 const CategoryList = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const { mealCategory, mealList, addToCart, cart } = useContext(StoreContext);
+  
 
   const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
+    setSelectedCategory(category === selectedCategory ? null : category);
+  };
+
+  // const showCartItemCountAlert = (count) => {
+  //   alert(`You have added ${count} item${count !== 1 ? 's' : ''} to the cart.`);
+  // };
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    const addedItem = cart.find(item => item.id === product.id);
+    if(addedItem) {
+      toast.success(`${addedItem.name} added to cart`);
+    }
+    
+    // showCartItemCountAlert(cart.length + 1); 
   };
 
   useEffect(() => {
@@ -15,9 +32,9 @@ const CategoryList = () => {
         setSelectedCategory(null);
       }
     };
-
+  
     document.addEventListener('mousedown', handleClickOutside);
-
+  
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -25,65 +42,55 @@ const CategoryList = () => {
 
   return (
     <>
-      <section className=''>
+      <section>
         <p className='sm:container px-28 pt-10 my-10 font-extrabold uppercase text-2xl sm:text-3xl'>Explore Our Menu</p>
-        <ul className='grid sm:container scale-95 px-10 lg:grid-cols-6 md:justify-items-center md:grid-cols-3 grid-cols-2 gap-6'>
-          {mealOptions.map((category) => (
-            <li
-              key={category.category}
-              onClick={() => handleCategoryClick(category)}
-              className='flex flex-col border-t-2 shadow-md 
-              transition-all duration-700 ease-in-out hover:scale-110
-              shadow-orange-300 border-orange-300 p-10 w-full pt-4 
-              items-center uppercase justify-items-center font-bold text-lg'
+        <div className='grid px-24 sm:grid-cols-6 md:justify-items-center grid-cols-1 gap-4'>
+          {mealCategory && mealCategory.map((item) => (
+            <div
+              key={item.name}
+              className='flex flex-col border-t-2 shadow-md text-sm rounded-lg transition-all duration-700 ease-in-out hover:scale-110 shadow-orange-300'
+              onClick={() => handleCategoryClick(item)}
             >
-              <div>
-                {category.category}
-              </div>
-              <div className='w-20'>
-                <img src={category.img} alt='food_image' />
-              </div>
-              <button
-                onClick={() => handleCategoryClick(category)}
+              <p className='sm:bottom-52 p-1 bg-orange-400 text-center rounded-sm font-extrabold text-lg uppercase'>{item.name}</p>
+              <img src={item.img} className='w-full h-[50%] inset-0 bg-gradient-to-br from-transparent to-black opacity-90 bg-cover' alt={item.name} />
+              <button 
                 className='border-2 border-orange-100 text-orange-500 
-                px-2 py-2 font-normal mt-10 rounded-2xl text-[12px] 
-                sm:text-[14px]'
+                p-2 font-normal mt-10 rounded-md w-[%] hover:bg-orange-500 hover:text-white  mx-auto
+                 text-[12px] sm:text-[14px]' onClick={() => handleCategoryClick(item)}
               >
                 View More
-              </button>
-            </li>
+              </button>  
+            </div>
           ))}
-        </ul>
-          <div className={`container mx-auto selected-category ${selectedCategory ? '' : 'hidden'}`}>
-        {selectedCategory && (
-          <div className='container max-w-sm mx-auto md:max-w-none md:mx-0'>
-            <p>{selectedCategory.category}</p>
-            <ul className='grid grid-cols-4 md:max-w-none md:mx-0 gap-5'>
-              {selectedCategory.options.map((item) => (
-                <li key={item.id} className='flex flex-col border-t-2 shadow-md text-sm rounded-lg transition-all duration-700 ease-in-out hover:scale-110 shadow-orange-300 p-5'>
-                  <p className='font-bold uppercase pb-4'>{item.name}</p>
-                  <p className='pb-4'>{item.description}</p>
-                  
-          <div className='flex items-center justify-between'>
-          <p className='font-bold'>{item.price}</p>          
-           <div className='flex'>
-            <button className='cursor-default'>
-           <div className='flex p-2 bg-white rounded-sm border-2 border-orange-300'>
-          <BiPlus />
-          </div>
-          </button>
-          <button className='cursor-default'>
-          <div className='flex p-2 bg-white rounded-sm border-2 border-orange-300'>
-          <BiMinus />
-          </div>
-          </button>
-          </div>
         </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className={`sm:container sm:px-32 mx-auto selected-category ${selectedCategory ? '' : ' hidden'}`}>
+          {selectedCategory && (
+            <div className='max-w-sm mx-auto md:max-w-none md:mx-0'>
+              <p className='uppercase font-bold text-2xl py-5 w-100% text-center bg-orange-300 pl-5 rounded-lg my-5'>{selectedCategory.name}</p>
+              <ul className='grid grid-cols-2 gap-5 sm:grid-cols-4'>
+                {mealList.filter((meal) => meal.category === selectedCategory.name)
+                  .map((item) => (
+                    <li key={item.id} className='flex flex-col border-t-2 shadow-md text-sm rounded-lg transition-all duration-700 ease-in-out hover:scale-110 shadow-orange-300'>
+                      <div className='relative'>
+                        <img src={item.img} className='w-full h-[50%] inset-0 bg-gradient-to-br from-transparent to-black opacity-90 bg-cover' alt='meal_list' />
+                        <p className='absolute bottom-60 sm:bottom-52  pl-5 font-extrabold text-lg uppercase'>{item.name}</p>
+                        <div className='p-5'>
+                          <p className='pb-4'>{item.description}</p>
+                          <div className='flex items-center justify-between'>
+                            <p className='font-bold bg-orange-500 p-2 rounded-md text-white'>#{item.price}</p>
+                            <div className='flex items-center'>
+                              <button onClick={() => handleAddToCart(item)} type='button' className='rounded bg-theme-cart active:scale-90 py-2 px-3'>
+                                <BiPlus className='text-white stroke-[2]' />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
         </div>
       </section>
     </>
